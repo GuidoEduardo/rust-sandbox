@@ -1,6 +1,10 @@
 use v8;
+use std::{fs, path::Path};
 
 fn main() {
+    let path = Path::new("assets/source.js");
+    let source_file = fs::read_to_string(&path).unwrap();
+
     let platform = v8::new_default_platform(0, false).make_shared();
     v8::V8::initialize_platform(platform);
     v8::V8::initialize();
@@ -11,12 +15,12 @@ fn main() {
     let context = v8::Context::new(scope);
     let scope = &mut v8::ContextScope::new(scope, context);
 
-    let code = v8::String::new(scope, "100/2").unwrap();
+    let source = v8::String::new(scope, &source_file).unwrap();
 
-    let script = v8::Script::compile(scope, code, None).unwrap();
+    let script = v8::Script::compile(scope, source, None).unwrap();
 
     let result = script.run(scope).unwrap();
     let result = result.to_string(scope).unwrap();
 
-    assert!(result.to_rust_string_lossy(scope) == "50");
+    println!("Result: {}", result.to_rust_string_lossy(scope));
 }
